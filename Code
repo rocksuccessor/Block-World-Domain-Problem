@@ -1,0 +1,275 @@
+#include<iostream>
+#include <vector>
+using namespace std;
+void display(vector<string> v1){
+    cout<<"{ ";
+    for(int i=0;i<v1.size();i++){
+        if(i!=v1.size()-1){
+        cout<<v1[i]<<" , ";
+        }
+        else{
+            cout<<v1[i]<<" ";
+        }
+    }
+    cout<<"} ";
+}
+void display1(vector<vector<string>> v1){
+    for(int i=0;i<v1.size();i++){
+        display(v1[i]);
+        cout<<endl;
+    }
+}
+int check(string ad,vector<string> v2){
+    for(int i=0;i<v2.size();i++){
+        if(v2[i]==ad){
+            return 1;
+        }
+    }
+    return 0;
+}
+char check1(char k,vector<string> v2){
+    for(int i=0;i<v2.size();i++){
+        if(v2[i][0]=='o'&&v2[i][3]==k){
+              return v2[i][6];
+            
+        }
+    }
+    return 'o';
+
+}
+vector<string> seq(char k,char l,vector<string> v3){
+    vector<string> in;
+    string u="clear(";
+            u=u+k+')';
+            int y=check(u,v3);
+            if(y==1){
+                 in.push_back(u);
+            }
+    
+            int omk=5;
+            while(l!='t' && omk>0){
+
+                omk--;
+                string tem="on(";
+                tem=tem+k+", "+l+')';
+                
+                in.push_back(tem);
+                k=l;
+                // cout<<"k :"<<k<<endl;
+                //    cout<<"l  K :"<<l<<"   "<<k<<endl;
+                 l=check1(k,v3);
+                //   cout<<"l  K :"<<l<<"   "<<k<<endl;
+             
+                if(l=='o'){
+                    break;
+                }
+
+            }
+            string tem="on(";
+            tem=tem+k+", table)";
+            in.push_back(tem);
+        return in;
+
+}
+int heriustic(vector<string> init,vector<string> final1){
+    int her=0;
+    for(int i=0;i<init.size();i++){
+        if(init[i][0]=='o'){
+            vector<string> in;
+            vector<string> fn;
+            char k=init[i][3];
+            char l=init[i][6];
+            in=seq(k,l,init);
+          
+        
+            for(int v=0;v<final1.size();v++){
+                if(final1[v][0]=='o'&& final1[v][3]==k ){
+                    l=final1[v][6];
+                    fn=seq(k,l,final1);
+                
+                  
+                    break;
+                }
+            }
+            int p1=in.size();
+            int p2=fn.size();
+            int m1=max(p1,p2);
+            int s=0;
+            while(in[s]==fn[s]&& s<p1 && s<p2){
+                s++;
+            }
+            her=her+(m1-s);
+          
+
+
+            
+            
+            
+
+
+        }
+    }
+    return her;
+}
+
+
+vector<vector<string>> finop(vector<string> p,vector<string> goal){
+    // cout<<endl<<endl<<endl<<endl<<"Attention please:"<<endl;
+    // display(p);
+    int min=heriustic(p,goal);
+    cout<<"Initial state: ";
+    vector<vector<string>> minher;
+    minher.push_back(p);
+    display(p);
+    vector<string> minheristic=p;
+    cout<<"heuristic : "<<min<<endl;
+
+   
+    int tempheris;
+    for(int i=0;i<p.size();i++){
+        if(p[i][0]=='o'){
+         
+            char k=p[i][3];
+            int d=0;
+            for(int j=0;j<p.size();j++){
+                // cout<<"ad"<<endl;
+                if(p[j][0]=='c'){
+                    // cout<<"op"<<endl;
+                    if(p[j][6]==k){
+                        // cout<<"ram"<<endl;
+                        d=1;
+                        break;
+                       
+                    }
+                }
+            }
+            if(d==1){
+                // cout<<"ads is rock"<<endl;
+              
+               char act=p[i][3];
+               char plc=p[i][6];
+            //    cout<<"plc"<<plc<<endl<<endl;
+               string place="clear(";
+               place=place+plc+')';
+                 cout<<"Moving "<<act<<endl;
+                vector<string> ad=p;
+               ad.erase(ad.begin()+i);
+               for(int l=0;l<ad.size();l++){
+                   if(ad[l][0]=='c' && ad[l][6]!=act){
+                    char onp=ad[l][6];
+                        vector<string> tem=ad;
+                        tem.erase(tem.begin()+l);
+                        string f="on(";
+                        f=f+act+", "+onp+")";
+                        cout<<"on "<<onp<<endl;
+                        tem.insert(tem.begin(),f);
+                        if(plc!='t'){
+                        tem.push_back(place);
+                        }
+                         tempheris=heriustic(tem,goal);
+                        display(tem);
+                        cout<<"heristic :"<<tempheris<<endl;
+                        if(tempheris==min){
+                            minher.push_back(tem);
+                        }
+                        else if(tempheris<min){
+                            min=tempheris;
+                            minher.clear();
+                            minher.push_back(tem);
+
+                        }
+
+
+                 
+
+                   }
+
+                    
+               }
+         
+                string fir="on(";
+                fir=fir+act+", table)";
+
+                ad.insert(ad.begin(),fir);
+                if(plc!='t'){
+                 ad.push_back(place);
+                }
+                 tempheris=heriustic(ad,goal);
+                 cout<<"on table"<<endl;
+                 display(ad);
+                 cout<<" heuristic :"<<tempheris<<endl<<endl;
+                 if(tempheris==min){
+                     minher.push_back(ad);
+                 }
+                 else if(tempheris<min){
+                     min=tempheris;
+                     minher.clear();
+                     minher.push_back(ad);
+
+                }
+                 
+                
+                
+            }
+
+        }
+    }
+    cout<<"optimal sol:"<<endl;
+    display1(minher);
+
+    // cout<<endl<<endl<<endl<<endl<<"Attention please:"<<endl;
+    // display(p);
+    // cout<<endl<<endl<<endl;
+    return minher;
+
+}
+void calc(vector<string> present,vector<string> goal){
+    static int ops=0;
+    ops++;
+    if(ops==15){
+        return;
+    }
+    int aditya=heriustic(goal,goal);
+    //    cout<<endl<<"anik"<<endl;
+    //    display(present);
+    //    cout<<endl<<"anik"<<endl;
+
+
+       vector<vector<string>> res=finop(present,goal);
+    //    cout<<"res"<<endl;
+    //    display1(res);
+    //    cout<<endl<<"anik"<<endl;
+    //    display(present);
+    //    cout<<endl<<"anik"<<endl;
+       for(int i=0;i<res.size();i++){
+        if(heriustic(res[i],goal)==aditya){
+           cout<<endl<<"Yes its possible:";
+            return;
+        }
+       }
+       if(heriustic(res[0],present)==0){
+        cout<<"omkar"<<endl;
+        return;
+       }
+
+       else{
+   
+             for(int i=0;i<res.size();i++){
+                calc(res[i],goal);
+             }
+       }
+}
+int main(){
+
+    vector<string> initial={"on(A, B)","on(B, table)","on(C, D)","on(D, table)","clear(A)","clear(C)"};
+    cout<<"ads";
+    vector<string> fin={"on(C, D)","on(D, table)","on(B, C)","on(A, table)","clear(B)","clear(A)"};
+
+    cout<<"new one"<<endl<<endl;
+  
+    calc(initial,fin);
+
+
+   
+
+}
